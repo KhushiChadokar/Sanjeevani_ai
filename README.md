@@ -19,6 +19,9 @@ Thalassemia patients face frequent transfusions, urgent donor needs, and emotion
 
 ---
 
+![Sanjeevani AI Screenshot](images/ss.png.png)
+
+
 ## 🛠️ Tech Stack
 
 | Layer     | Technologies |
