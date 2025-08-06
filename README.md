@@ -68,15 +68,14 @@ Thalassemia patients face frequent transfusions, urgent donor needs, and emotion
 
 ## 🔗 Project Links
 
-- 🌐 [Live Website](#) *(Add once deployed)*  
-- 💾 [GitHub Repository](#) *(Add your GitHub repo URL)*  
-- 📽️ [Pitch Deck (PDF)](#) *(Optional)*  
+- 💾 [GitHub Repository](https://github.com/KhushiChadokar/Sanjeevani_ai)   
+- 📽️ [Pitch Deck (PDF)](https://github.com/KhushiChadokar/Sanjeevani_ai/blob/main/Sanjeevani_Ai_Hackathon-Submission.pdf)
 
 ---
 
 ## 📄 License
 
-Licensed under the **MIT License** – see `LICENSE` file for details.
+Licensed under the **MIT License** – see [LICENSE](LICENSE) file for details.
 
 ---
 
