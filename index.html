@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanjeevani AI - Lifeline for Thalassemia Patients</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .chat-bubble-user { background: #667eea; }
+        .chat-bubble-ai { background: #f3f4f6; }
+        .pulse-animation { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .map-container { height: 400px; width: 100%; }
+        .donor-marker { background: #ef4444; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <span class="text-white font-bold text-lg">S</span>
+                        </div>
+                        <span class="ml-3 text-xl font-bold text-gray-800">Sanjeevani AI</span>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <button onclick="showPage('home')" class="nav-btn text-gray-700 hover:text-blue-600 px-3 py-2 font-medium">Home</button>
+                    <button onclick="showPage('chatbot')" class="nav-btn text-gray-700 hover:text-blue-600 px-3 py-2 font-medium">AI Assistant</button>
+                    <button onclick="showPage('donors')" class="nav-btn text-gray-700 hover:text-blue-600 px-3 py-2 font-medium">Find Donors</button>
+                    <button onclick="showPage('emergency')" class="nav-btn text-gray-700 hover:text-blue-600 px-3 py-2 font-medium">Emergency</button>
+                    <button onclick="showPage('resources')" class="nav-btn text-gray-700 hover:text-blue-600 px-3 py-2 font-medium">Resources</button>
+                    <button onclick="showPage('auth')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Login</button>
+                </div>
+                <div class="md:hidden flex items-center">
+                    <button onclick="toggleMobileMenu()" class="text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <button onclick="showPage('home')" class="block px-3 py-2 text-gray-700 hover:text-blue-600">Home</button>
+                <button onclick="showPage('chatbot')" class="block px-3 py-2 text-gray-700 hover:text-blue-600">AI Assistant</button>
+                <button onclick="showPage('donors')" class="block px-3 py-2 text-gray-700 hover:text-blue-600">Find Donors</button>
+                <button onclick="showPage('emergency')" class="block px-3 py-2 text-gray-700 hover:text-blue-600">Emergency</button>
+                <button onclick="showPage('resources')" class="block px-3 py-2 text-gray-700 hover:text-blue-600">Resources</button>
+                <button onclick="showPage('auth')" class="block px-3 py-2 text-blue-600">Login</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-16">
+        <!-- Home Page -->
+        <div id="home-page" class="page-content">
+            <!-- Hero Section -->
+            <section class="gradient-bg text-white py-20">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center">
+                        <h1 class="text-4xl md:text-6xl font-bold mb-6">
+                            Sanjeevani AI
+                            <span class="block text-2xl md:text-3xl font-normal mt-2">AI-Powered Lifeline for Thalassemia Patients</span>
+                        </h1>
+                        <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
+                            Connecting patients with donors, providing instant medical guidance, and ensuring timely care access through advanced AI technology.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button onclick="showPage('chatbot')" class="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
+                                🤖 Talk to AI Assistant
+                            </button>
+                            <button onclick="showPage('emergency')" class="bg-red-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-red-700 transition-colors pulse-animation">
+                                🚨 Emergency Alert
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Features Section -->
+            <section class="py-20 bg-white">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-16">
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">How Sanjeevani Helps</h2>
+                        <p class="text-xl text-gray-600 max-w-2xl mx-auto">Comprehensive support for Thalassemia patients and their families</p>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="text-center p-8 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors">
+                            <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <span class="text-2xl">🩸</span>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-4">Smart Donor Matching</h3>
+                            <p class="text-gray-600">AI-powered system to find compatible blood donors near you with real-time availability.</p>
+                        </div>
+                        <div class="text-center p-8 rounded-xl bg-green-50 hover:bg-green-100 transition-colors">
+                            <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <span class="text-2xl">🤖</span>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-4">24/7 AI Medical Assistant</h3>
+                            <p class="text-gray-600">Instant medical guidance, symptom tracking, and personalized care recommendations.</p>
+                        </div>
+                        <div class="text-center p-8 rounded-xl bg-red-50 hover:bg-red-100 transition-colors">
+                            <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <span class="text-2xl">🚨</span>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-4">Emergency Response</h3>
+                            <p class="text-gray-600">Rapid alert system connecting you to nearby hospitals and emergency blood supplies.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats Section -->
+            <section class="py-16 bg-gray-100">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="grid md:grid-cols-4 gap-8 text-center">
+                        <div>
+                            <div class="text-3xl font-bold text-blue-600 mb-2">10,000+</div>
+                            <div class="text-gray-600">Registered Donors</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-green-600 mb-2">5,000+</div>
+                            <div class="text-gray-600">Patients Helped</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-purple-600 mb-2">24/7</div>
+                            <div class="text-gray-600">AI Support</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-red-600 mb-2">99%</div>
+                            <div class="text-gray-600">Emergency Response</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Chatbot Page -->
+        <div id="chatbot-page" class="page-content hidden">
+            <div class="max-w-4xl mx-auto px-4 py-8">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
+                        <h2 class="text-2xl font-bold mb-2">🤖 Sanjeevani AI Assistant</h2>
+                        <p class="opacity-90">Your 24/7 medical companion for Thalassemia care</p>
+                    </div>
+                    <div id="chat-container" class="h-96 overflow-y-auto p-6 bg-gray-50">
+                        <div class="chat-bubble-ai text-gray-800 p-4 rounded-lg mb-4 max-w-xs">
+                            Hello! I'm your Sanjeevani AI assistant. I can help you with:
+                            <ul class="mt-2 text-sm">
+                                <li>• Symptom tracking</li>
+                                <li>• Medication reminders</li>
+                                <li>• Finding nearby hospitals</li>
+                                <li>• Blood transfusion guidance</li>
+                            </ul>
+                            How can I assist you today?
+                        </div>
+                    </div>
+                    <div class="p-6 border-t">
+                        <div class="flex gap-3">
+                            <input type="text" id="chat-input" placeholder="Type your message..." class="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button onclick="sendMessage()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">Send</button>
+                        </div>
+                        <div class="flex gap-2 mt-3">
+                            <button onclick="quickMessage('I need blood urgently')" class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm hover:bg-red-200">🚨 Urgent Blood Need</button>
+                            <button onclick="quickMessage('Track my symptoms')" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm hover:bg-blue-200">📊 Track Symptoms</button>
+                            <button onclick="quickMessage('Find nearby hospital')" class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm hover:bg-green-200">🏥 Find Hospital</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Donor Search Page -->
+        <div id="donors-page" class="page-content hidden">
+            <div class="max-w-7xl mx-auto px-4 py-8">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">🩸 Find Blood Donors</h2>
+                    <p class="text-gray-600">Locate compatible donors near your location</p>
+                </div>
+                
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <!-- Search Filters -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h3 class="text-xl font-semibold mb-4">Search Filters</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Blood Type</label>
+                                    <select class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option>Select Blood Type</option>
+                                        <option>A+</option>
+                                        <option>A-</option>
+                                        <option>B+</option>
+                                        <option>B-</option>
+                                        <option>AB+</option>
+                                        <option>AB-</option>
+                                        <option>O+</option>
+                                        <option>O-</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                                    <input type="text" placeholder="Enter city or area" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Distance (km)</label>
+                                    <select class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option>Within 5 km</option>
+                                        <option>Within 10 km</option>
+                                        <option>Within 25 km</option>
+                                        <option>Within 50 km</option>
+                                    </select>
+                                </div>
+                                <button onclick="searchDonors()" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-semibold">
+                                    🔍 Search Donors
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map and Results -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                            <div class="p-4 border-b">
+                                <h3 class="text-lg font-semibold">Donor Locations</h3>
+                            </div>
+                            <div id="donor-map" class="map-container"></div>
+                        </div>
+                        
+                        <!-- Donor List -->
+                        <div class="mt-6 bg-white rounded-xl shadow-lg p-6">
+                            <h3 class="text-lg font-semibold mb-4">Available Donors</h3>
+                            <div id="donor-list" class="space-y-4">
+                                <div class="border rounded-lg p-4 hover:bg-gray-50">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="font-semibold text-gray-800">Rajesh Kumar</h4>
+                                            <p class="text-sm text-gray-600">Blood Type: B+ | Distance: 2.3 km</p>
+                                            <p class="text-sm text-gray-600">📍 Sector 15, Noida</p>
+                                            <p class="text-sm text-green-600">✅ Available | Last donated: 4 months ago</p>
+                                        </div>
+                                        <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm">
+                                            📞 Contact
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="border rounded-lg p-4 hover:bg-gray-50">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="font-semibold text-gray-800">Priya Sharma</h4>
+                                            <p class="text-sm text-gray-600">Blood Type: B+ | Distance: 3.7 km</p>
+                                            <p class="text-sm text-gray-600">📍 Connaught Place, Delhi</p>
+                                            <p class="text-sm text-green-600">✅ Available | Last donated: 6 months ago</p>
+                                        </div>
+                                        <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm">
+                                            📞 Contact
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="border rounded-lg p-4 hover:bg-gray-50">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="font-semibold text-gray-800">Amit Patel</h4>
+                                            <p class="text-sm text-gray-600">Blood Type: B+ | Distance: 5.1 km</p>
+                                            <p class="text-sm text-gray-600">📍 Karol Bagh, Delhi</p>
+                                            <p class="text-sm text-orange-600">⏰ Available after 2 days</p>
+                                        </div>
+                                        <button class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 text-sm">
+                                            📅 Schedule
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Alert Page -->
+        <div id="emergency-page" class="page-content hidden">
+            <div class="max-w-2xl mx-auto px-4 py-8">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="bg-red-600 text-white p-6">
+                        <h2 class="text-2xl font-bold mb-2">🚨 Emergency Blood Alert</h2>
+                        <p class="opacity-90">Send urgent alerts to nearby donors and hospitals</p>
+                    </div>
+                    <form class="p-6 space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Patient Name *</label>
+                            <input type="text" required class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Enter patient name">
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Blood Type Required *</label>
+                                <select required class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    <option value="">Select Blood Type</option>
+                                    <option>A+</option>
+                                    <option>A-</option>
+                                    <option>B+</option>
+                                    <option>B-</option>
+                                    <option>AB+</option>
+                                    <option>AB-</option>
+                                    <option>O+</option>
+                                    <option>O-</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Units Required</label>
+                                <input type="number" min="1" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Number of units">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Hospital/Location *</label>
+                            <input type="text" required class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Hospital name and address">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Contact Number *</label>
+                            <input type="tel" required class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Emergency contact number">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Urgency Level</label>
+                            <select class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <option>Critical - Immediate (within 1 hour)</option>
+                                <option>Urgent - Within 6 hours</option>
+                                <option>Scheduled - Within 24 hours</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
+                            <textarea rows="3" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Any additional information..."></textarea>
+                        </div>
+                        <div class="flex gap-4">
+                            <button type="submit" onclick="sendEmergencyAlert(event)" class="flex-1 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 font-semibold pulse-animation">
+                                🚨 Send Emergency Alert
+                            </button>
+                            <button type="button" onclick="callEmergency()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-semibold">
+                                📞 Call 108
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resources Page -->
+        <div id="resources-page" class="page-content hidden">
+            <div class="max-w-6xl mx-auto px-4 py-8">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">📚 Resources & FAQs</h2>
+                    <p class="text-gray-600">Comprehensive information about Thalassemia care and management</p>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <!-- Quick Resources -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h3 class="text-xl font-semibold mb-4">Quick Resources</h3>
+                            <div class="space-y-3">
+                                <a href="#" class="block p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                                    <div class="font-medium text-blue-800">📋 Treatment Guidelines</div>
+                                    <div class="text-sm text-blue-600">Latest medical protocols</div>
+                                </a>
+                                <a href="#" class="block p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                                    <div class="font-medium text-green-800">🍎 Nutrition Guide</div>
+                                    <div class="text-sm text-green-600">Diet recommendations</div>
+                                </a>
+                                <a href="#" class="block p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                                    <div class="font-medium text-purple-800">💊 Medication Tracker</div>
+                                    <div class="text-sm text-purple-600">Track your medicines</div>
+                                </a>
+                                <a href="#" class="block p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors">
+                                    <div class="font-medium text-orange-800">🏥 Hospital Directory</div>
+                                    <div class="text-sm text-orange-600">Specialized centers</div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQs -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h3 class="text-xl font-semibold mb-6">Frequently Asked Questions</h3>
+                            <div class="space-y-4">
+                                <div class="border-b pb-4">
+                                    <button onclick="toggleFAQ(1)" class="w-full text-left font-medium text-gray-800 hover:text-blue-600 flex justify-between items-center">
+                                        What is Thalassemia?
+                                        <span class="text-2xl">+</span>
+                                    </button>
+                                    <div id="faq-1" class="hidden mt-3 text-gray-600">
+                                        Thalassemia is an inherited blood disorder that affects the body's ability to produce hemoglobin and red blood cells. People with thalassemia have fewer healthy red blood cells and less hemoglobin than normal.
+                                    </div>
+                                </div>
+                                <div class="border-b pb-4">
+                                    <button onclick="toggleFAQ(2)" class="w-full text-left font-medium text-gray-800 hover:text-blue-600 flex justify-between items-center">
+                                        How often do I need blood transfusions?
+                                        <span class="text-2xl">+</span>
+                                    </button>
+                                    <div id="faq-2" class="hidden mt-3 text-gray-600">
+                                        The frequency depends on the severity of your condition. Most patients with thalassemia major need transfusions every 2-4 weeks, while those with thalassemia intermedia may need them less frequently.
+                                    </div>
+                                </div>
+                                <div class="border-b pb-4">
+                                    <button onclick="toggleFAQ(3)" class="w-full text-left font-medium text-gray-800 hover:text-blue-600 flex justify-between items-center">
+                                        What are the signs of iron overload?
+                                        <span class="text-2xl">+</span>
+                                    </button>
+                                    <div id="faq-3" class="hidden mt-3 text-gray-600">
+                                        Signs include fatigue, joint pain, abdominal pain, irregular heartbeat, and changes in skin color. Regular monitoring and iron chelation therapy help manage iron levels.
+                                    </div>
+                                </div>
+                                <div class="border-b pb-4">
+                                    <button onclick="toggleFAQ(4)" class="w-full text-left font-medium text-gray-800 hover:text-blue-600 flex justify-between items-center">
+                                        Can I live a normal life with Thalassemia?
+                                        <span class="text-2xl">+</span>
+                                    </button>
+                                    <div id="faq-4" class="hidden mt-3 text-gray-600">
+                                        With proper treatment and care, many people with thalassemia can live full, productive lives. Regular medical care, blood transfusions, and iron chelation therapy are key to managing the condition.
+                                    </div>
+                                </div>
+                                <div class="border-b pb-4">
+                                    <button onclick="toggleFAQ(5)" class="w-full text-left font-medium text-gray-800 hover:text-blue-600 flex justify-between items-center">
+                                        What should I eat with Thalassemia?
+                                        <span class="text-2xl">+</span>
+                                    </button>
+                                    <div id="faq-5" class="hidden mt-3 text-gray-600">
+                                        Focus on a balanced diet rich in calcium, vitamin D, and folic acid. Limit iron-rich foods and avoid vitamin C supplements with meals, as they increase iron absorption.
+                                    </div>
+                                </div>
+                                <div class="pb-4">
+                                    <button onclick="toggleFAQ(6)" class="w-full text-left font-medium text-gray-800 hover:text-blue-600 flex justify-between items-center">
+                                        How can I find compatible blood donors?
+                                        <span class="text-2xl">+</span>
+                                    </button>
+                                    <div id="faq-6" class="hidden mt-3 text-gray-600">
+                                        Use our AI-powered donor search feature to find compatible donors near you. We match based on blood type, location, and availability. You can also register as a donor to help others.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auth Page -->
+        <div id="auth-page" class="page-content hidden">
+            <div class="max-w-md mx-auto px-4 py-8">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="p-6">
+                        <div class="text-center mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="text-white font-bold text-2xl">S</span>
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-800">Welcome to Sanjeevani</h2>
+                            <p class="text-gray-600">Sign in to access your personalized care</p>
+                        </div>
+
+                        <!-- Login/Register Toggle -->
+                        <div class="flex mb-6 bg-gray-100 rounded-lg p-1">
+                            <button onclick="showAuthForm('login')" id="login-tab" class="flex-1 py-2 px-4 rounded-md font-medium transition-colors bg-white text-blue-600 shadow-sm">
+                                Login
+                            </button>
+                            <button onclick="showAuthForm('register')" id="register-tab" class="flex-1 py-2 px-4 rounded-md font-medium transition-colors text-gray-600 hover:text-gray-800">
+                                Register
+                            </button>
+                        </div>
+
+                        <!-- Login Form -->
+                        <form id="login-form" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input type="email" required class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="your@email.com">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                                <input type="password" required class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                                </label>
+                                <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Forgot password?</a>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-semibold">
+                                Sign In
+                            </button>
+                        </form>
+
+                        <!-- Register Form -->
+                        <form id="register-form" class="space-y-4 hidden">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                    <input type="text" required class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="John">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                    <input type="text" required class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Doe">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input type="email" required class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="your@email.com">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                                <input type="tel" required class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="+91 9876543210">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Blood Type</label>
+                                <select required class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Select Blood Type</option>
+                                    <option>A+</option>
+                                    <option>A-</option>
+                                    <option>B+</option>
+                                    <option>B-</option>
+                                    <option>AB+</option>
+                                    <option>AB-</option>
+                                    <option>O+</option>
+                                    <option>O-</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">User Type</label>
+                                <select required class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Select Type</option>
+                                    <option>Patient</option>
+                                    <option>Donor</option>
+                                    <option>Caregiver</option>
+                                    <option>Healthcare Provider</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                                <input type="password" required class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••">
+                            </div>
+                            <div>
+                                <label class="flex items-center">
+                                    <input type="checkbox" required class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="ml-2 text-sm text-gray-600">I agree to the Terms of Service and Privacy Policy</span>
+                                </label>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-semibold">
+                                Create Account
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentPage = 'home';
+        let map = null;
+
+        // Page navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.add('hidden');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId + '-page').classList.remove('hidden');
+            currentPage = pageId;
+            
+            // Update navigation
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-blue-600');
+                btn.classList.add('text-gray-700');
+            });
+            
+            // Initialize map if donors page is shown
+            if (pageId === 'donors' && !map) {
+                initializeMap();
+            }
+            
+            // Hide mobile menu
+            document.getElementById('mobile-menu').classList.add('hidden');
+        }
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Initialize map for donor search
+        function initializeMap() {
+            setTimeout(() => {
+                const mapElement = document.getElementById('donor-map');
+                if (mapElement && !map) {
+                    map = L.map('donor-map').setView([28.6139, 77.2090], 12); // Delhi coordinates
+                    
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors'
+                    }).addTo(map);
+                    
+                    // Add sample donor markers
+                    const donors = [
+                        {lat: 28.6139, lng: 77.2090, name: "Rajesh Kumar", bloodType: "B+"},
+                        {lat: 28.6289, lng: 77.2065, name: "Priya Sharma", bloodType: "B+"},
+                        {lat: 28.6089, lng: 77.2190, name: "Amit Patel", bloodType: "B+"}
+                    ];
+                    
+                    donors.forEach(donor => {
+                        L.marker([donor.lat, donor.lng])
+                            .addTo(map)
+                            .bindPopup(`<b>${donor.name}</b><br>Blood Type: ${donor.bloodType}<br><button class="bg-green-600 text-white px-2 py-1 rounded text-sm mt-1">Contact</button>`);
+                    });
+                }
+            }, 100);
+        }
+
+        // Search donors
+        function searchDonors() {
+            alert('Searching for donors... This would connect to the donor database and show real-time results.');
+        }
+
+        // Chatbot functionality
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            addChatMessage(message, 'user');
+            input.value = '';
+            
+            // Simulate AI response
+            setTimeout(() => {
+                const responses = [
+                    "I understand you need assistance. Let me help you with that. Based on your symptoms, I recommend consulting with your hematologist.",
+                    "For blood transfusion scheduling, I can help you find the nearest blood bank. Would you like me to locate one for you?",
+                    "Your medication reminder has been set. I'll notify you 30 minutes before your next dose.",
+                    "I've found 3 hospitals within 5km of your location that specialize in Thalassemia care. Would you like their contact details?"
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                addChatMessage(randomResponse, 'ai');
+            }, 1000);
+        }
+
+        function quickMessage(message) {
+            document.getElementById('chat-input').value = message;
+            sendMessage();
+        }
+
+        function addChatMessage(message, sender) {
+            const container = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `${sender === 'user' ? 'chat-bubble-user text-white ml-auto' : 'chat-bubble-ai text-gray-800'} p-4 rounded-lg mb-4 max-w-xs`;
+            messageDiv.textContent = message;
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Emergency alert
+        function sendEmergencyAlert(event) {
+            event.preventDefault();
+            alert('🚨 Emergency alert sent successfully!\n\nYour alert has been sent to:\n• Nearby registered donors\n• Emergency blood banks\n• Partner hospitals\n\nYou will receive confirmation calls shortly.');
+        }
+
+        function callEmergency() {
+            alert('📞 Calling Emergency Services (108)...\n\nThis would initiate a call to emergency services in a real implementation.');
+        }
+
+        // FAQ toggle
+        function toggleFAQ(id) {
+            const faq = document.getElementById(`faq-${id}`);
+            const button = faq.previousElementSibling.querySelector('span');
+            
+            if (faq.classList.contains('hidden')) {
+                faq.classList.remove('hidden');
+                button.textContent = '−';
+            } else {
+                faq.classList.add('hidden');
+                button.textContent = '+';
+            }
+        }
+
+        // Auth form toggle
+        function showAuthForm(type) {
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const loginTab = document.getElementById('login-tab');
+            const registerTab = document.getElementById('register-tab');
+            
+            if (type === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                loginTab.className = 'flex-1 py-2 px-4 rounded-md font-medium transition-colors bg-white text-blue-600 shadow-sm';
+                registerTab.className = 'flex-1 py-2 px-4 rounded-md font-medium transition-colors text-gray-600 hover:text-gray-800';
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                loginTab.className = 'flex-1 py-2 px-4 rounded-md font-medium transition-colors text-gray-600 hover:text-gray-800';
+                registerTab.className = 'flex-1 py-2 px-4 rounded-md font-medium transition-colors bg-white text-blue-600 shadow-sm';
+            }
+        }
+
+        // Chat input enter key
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatInput = document.getElementById('chat-input');
+            if (chatInput) {
+                chatInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'968e0533a1bcd8bc',t:'MTc1NDE0MjM3NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
